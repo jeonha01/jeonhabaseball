@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<style>
+  #field {
+    position: absolute;
+    top: 0px;
+    left: 200px;
+    height: 700px;
+    width: 700px;
+    border-radius: 1% 100% 1% 1%;
+    background-color: green;
+    -webkit-transform: rotate(-45deg);
+  }
+
+  .base {
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    background-color: white;
+    -webkit-transform: rotate(-45deg);
+  }
+
+  #first {
+    top: 560px;
+    left: 760px;
+
+  }
+
+  #second {
+    top: 380px;
+    left: 540px;
+
+  }
+
+  #third {
+    top: 560px;
+    left: 320px;
+
+  }
+
+  #home {
+    top: 780px;
+    left: 540px;
+
+  }
+
+  .player {
+    background-color: brown;
+  }
+</style>
+
+<body>
+  <form id="form">
+    <input type="text" id="input">
+    <button id="swing">확인</button>
+  </form>
+  <div id="logs"></div>
+  <div>
+    <div id="field"></div>
+    <div id="first" class="base"></div>
+    <div id="second" class="base"></div>
+    <div id="third" class="base"></div>
+    <div id="home" class="base"></div>
+  </div>
+  <script>
+
+    $swing = document.querySelector("#swing")
+    $first = document.querySelector("#first")
+    $second = document.querySelector("#second")
+    $third = document.querySelector("#third")
+    $home = document.querySelector("#home")
+
+    const $input = document.querySelector('#input')
+    const $form = document.querySelector('#form')
+    const $logs = document.querySelector('#logs')
+    const numbers = []
+    let answer = []
+    function gameStart() {
+      for (let n = 1; n <= 9; n += 1) {
+        numbers.push(n)
+      }
+
+      for (let i = 0; i < 4; i++) {
+        let num = Math.floor(Math.random() * numbers.length)
+        answer.push(numbers[num])
+        numbers.splice(num, 1)
+      }
+      console.log(answer.join(''))
+    }
+    gameStart()
+
+    let a = 0
+
+    const tries = [] // 이미 시도했던 숫자들
+    function checkinput(input) {
+      if (input.length !== 4) {
+        return alert('4자리 숫자를 입력해 주세요.')
+      }
+      if (new Set(input).size !== 4) {
+        return alert('중복되지 않게 입력해 주세요.')
+      }
+      if (tries.includes(input)) {
+        return alert('이미 시도한 값입니다')
+      }
+      return true
+    }
+    $form.addEventListener('submit', (event) => {
+
+      event.preventDefault();
+      const value = $input.value
+      $input.value = '';
+      const valid = checkinput(value)
+      if (!valid) return
+      if (answer.join('') === value) {
+        if (tries.length == 0) {
+          if (a == 1 || a == 2 || a == 3) {
+            $logs.textContent = '홈런! 점수 2점 획득'
+            $first.classList.remove("player")
+            $second.classList.remove("player")
+            $third.classList.remove("player")
+          } else {
+            $logs.textContent = '홈런! 점수 1점 획득'
+          }
+          a = 0
+          numbers.splice(0, 5)
+          answer = []
+          gameStart()
+          tries.splice(0, 40)
+          setTimeout(del, 3000)
+        } else if (tries.length >= 1 && tries.length <= 3) {
+          if (a == 1 || a == 2 || a == 3) {
+            $logs.textContent = '3루타! 점수 1점 획득'
+            $third.classList.add("player")
+            $first.classList.remove("player")
+            $second.classList.remove("player")
+          } else {
+            $logs.textContent = '3루타!'
+            $third.classList.add("player")
+          }
+          a = 3
+          numbers.splice(0, 5)
+          answer = []
+          gameStart()
+          tries.splice(0, 40)
+          setTimeout(del, 3000)
+        } else if (tries.length >= 4 && tries.length <= 6) {
+          if (a == 1 || a == 2 || a == 3) {
+            $logs.textContent = '2루타!'
+            $third.classList.add("player")
+            $second.classList.add("player")
+            $first.classList.remove("player")
+          } else {
+            $logs.textContent = '2루타!'
+            $second.classList.add("player")
+          }
+          a = 2
+          numbers.splice(0, 5)
+          answer = []
+          gameStart()
+          tries.splice(0, 40)
+          setTimeout(del, 3000)
+        } else if (tries.length >= 7 && tries.length <= 9) {
+          if (a == 1 || a == 2) {
+            $logs.textContent = '1루타!'
+            $first.classList.add("player")
+            $second.classList.add("player")
+            $third.classList.remove("player")
+          } else if (a == 3) {
+            $logs.textContent = '1루타!'
+            $first.classList.add("player")
+            $third.classList.add("player")
+            $second.classList.remove("player")
+          } else {
+            $logs.textContent = '1루타!'
+            $first.classList.add("player")
+          }
+          a = 1
+          numbers.splice(0, 5)
+          answer = []
+          gameStart()
+          tries.splice(0, 40)
+          setTimeout(del, 3000)
+        }
+        numbers = []
+        answer = []
+        tries = []
+        gameStart()
+        return
+      }
+      if (tries.length >= 9) {
+        const message = document.createTextNode(`패배! 정답은 ${answer.join('')}`)
+        $logs.appendChild(message)
+        $swing.disabled = true
+        return
+      }
+      console.log(tries.length)
+      let strike = 0
+      let ball = 0
+      for (let i = 0; i < answer.length; i++) {
+        const index = value.indexOf(answer[i])
+        if (index > -1) {
+          if (index === i) {
+            strike += 1
+          } else {
+            ball += 1
+          }
+        }
+      }
+      $logs.append(`${value}: ${strike} 스트라이크 ${ball} 볼`, document.createElement('br'))
+      tries.push(value)
+    })
+
+    function del() {
+      $logs.textContent = ''
+    }
+
+  </script>
+</body>
+
+</html>
